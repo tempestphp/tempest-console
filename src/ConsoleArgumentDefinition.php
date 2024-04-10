@@ -19,10 +19,11 @@ final readonly class ConsoleArgumentDefinition
         public ?string $description = null,
         public array $aliases = [],
         public ?string $help = null,
+        public bool $isPositional = true,
     ) {
     }
 
-    public static function fromParameter(ReflectionParameter $parameter): ConsoleArgumentDefinition
+    public static function fromParameter(ReflectionParameter $parameter, bool $asPositional = true): ConsoleArgumentDefinition
     {
         $attributes = $parameter->getAttributes(ConsoleArgument::class);
 
@@ -46,12 +47,13 @@ final readonly class ConsoleArgumentDefinition
             description: $attribute?->description,
             aliases: $attribute->aliases ?? [],
             help: $attribute?->help,
+            isPositional: $asPositional,
         );
     }
 
     public function matchesArgument(ConsoleInputArgument $argument): bool
     {
-        if ($argument->position === $this->position) {
+        if ($this->isPositional && $argument->position === $this->position) {
             return true;
         }
 

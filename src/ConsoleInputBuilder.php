@@ -26,13 +26,15 @@ final class ConsoleInputBuilder
     {
         $validArguments = [];
         $invalidDefinitions = [];
+        $validCommandArguments = [];
 
         $widgets = $this->buildWidgets();
 
         $commandArgumentDefinitions = $this->command->getArgumentDefinitions();
+        /** @var ConsoleArgumentDefinition[] $widgetArgumentDefinitions */
         $widgetArgumentDefinitions = array_merge(...array_values($widgets));
 
-        foreach ([...$widgetArgumentDefinitions, ...$commandArgumentDefinitions] as $argumentDefinition) {
+        foreach ($commandArgumentDefinitions as $argumentDefinition) {
             $value = $this->argumentBag->findFor($argumentDefinition);
 
             if ($value === null) {
@@ -41,7 +43,20 @@ final class ConsoleInputBuilder
                 continue;
             }
 
-            $validArguments[] = $value;
+            $validArguments[$argumentDefinition->name] = $value;
+            $validCommandArguments[] = $value;
+        }
+
+        foreach ($widgetArgumentDefinitions as $argumentDefinition) {
+            $value = $this->argumentBag->findFor($argumentDefinition);
+
+            if ($value === null) {
+                $invalidDefinitions[] = $argumentDefinition;
+
+                continue;
+            }
+
+            $validArguments[$argumentDefinition->name] = $value;
         }
 
         if (count($invalidDefinitions)) {
@@ -51,13 +66,11 @@ final class ConsoleInputBuilder
             );
         }
 
-        foreach ($this->buildWidgetList($widgets) as $widget) {
-            $widget->__invoke();
-        }
+        $this->executeWidgets($widgets, $validArguments);
 
         return array_map(
             callback: fn (ConsoleInputArgument $argument) => $argument->value,
-            array: $validArguments,
+            array: $validCommandArguments,
         );
     }
 
@@ -79,7 +92,7 @@ final class ConsoleInputBuilder
             $method = $reflection->getMethod('__invoke');
 
             foreach ($method->getParameters() as $parameter) {
-                $definitions[$widgetClass][] = ConsoleArgumentDefinition::fromParameter($parameter);
+                $definitions[$widgetClass][] = ConsoleArgumentDefinition::fromParameter($parameter, false);
             }
         }
 
@@ -97,29 +110,16 @@ final class ConsoleInputBuilder
         ];
     }
 
-    /**
-     * @return ConsoleWidget[]
-     */
-    private function buildWidgetList(array $widgetDefinitionList): array
+    private function executeWidgets(array $widgetDefinitionList, array $validArguments): void
     {
-        $widgets = [];
-
         foreach ($widgetDefinitionList as $widgetClass => $widgetProperties) {
             $mappedProperties = [];
 
             foreach ($widgetProperties as $property) {
-                $argument = $this->argumentBag->findFor($property);
-
-                if ($argument === null) {
-                    continue;
-                }
-
-                $mappedProperties[$property->name] = $argument->value;
+                $mappedProperties[$property->name] = $validArguments[$property->name]->value;
             }
 
-            $widgets[] = $this->container->get($widgetClass);
+            ($this->container->get($widgetClass))->__invoke(...$mappedProperties);
         }
-
-        return $widgets;
     }
 }
