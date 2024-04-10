@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tempest\Console;
 
+use ReflectionProperty;
 use ReflectionNamedType;
 use ReflectionParameter;
 
@@ -14,7 +15,7 @@ final readonly class ConsoleArgumentDefinition
         public string $type,
         public mixed $default,
         public bool $hasDefault,
-        public int $position,
+        public ?int $position,
         public ?string $description = null,
         public array $aliases = [],
         public ?string $help = null,

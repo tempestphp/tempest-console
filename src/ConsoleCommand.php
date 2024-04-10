@@ -7,6 +7,8 @@ namespace Tempest\Console;
 use Attribute;
 use ReflectionMethod;
 use Tempest\Support\ArrayHelper;
+use Tempest\Console\Widgets\ConsoleWidget;
+use Tempest\Console\Widgets\ConsoleWidgetDefinition;
 
 #[Attribute]
 final class ConsoleCommand
@@ -23,6 +25,9 @@ final class ConsoleCommand
         public readonly array $aliases = [],
         /** @var string|string[] $help */
         string|array $help = [],
+
+        /** @var class-string<ConsoleWidget>[] */
+        public readonly array $widgets = [],
     ) {
         $this->help = ArrayHelper::wrap($help);
     }
@@ -54,6 +59,7 @@ final class ConsoleCommand
             'handler_method' => $this->handler->getName(),
             'aliases' => $this->aliases,
             'help' => $this->help,
+            'widgets' => $this->widgets,
         ];
     }
 
@@ -67,6 +73,7 @@ final class ConsoleCommand
         );
         $this->aliases = $data['aliases'];
         $this->help = $data['help'];
+        $this->widgets = $data['widgets'];
     }
 
     /**

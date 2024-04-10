@@ -7,6 +7,7 @@ namespace App\Console;
 use Tempest\Console\ConsoleArgument;
 use Tempest\Console\ConsoleCommand;
 use Tempest\Console\ConsoleOutput;
+use Tempest\Console\Widgets\ForceWidget;
 
 final readonly class Hello
 {
@@ -16,7 +17,9 @@ final readonly class Hello
     }
 
     // hello:world {input} --flag
-    #[ConsoleCommand]
+    #[ConsoleCommand(
+        widgets: [ForceWidget::class] // widgets can be defined locally, or globally via #[GlobalConsoleWidget] attribute
+    )]
     public function world(string $input)
     {
         $this->output->info('Hi');

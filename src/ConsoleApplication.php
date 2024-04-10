@@ -106,7 +106,7 @@ final readonly class ConsoleApplication implements Application
      */
     private function buildInput(ConsoleCommand $command): array
     {
-        $builder = new ConsoleInputBuilder($command, $this->argumentBag);
+        $builder = new ConsoleInputBuilder($command, $this->argumentBag, $this->container);
 
         return $builder->build();
     }

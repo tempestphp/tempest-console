@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tempest\Console;
 
 use ReflectionMethod;
+use Tempest\Console\Widgets\ConsoleWidget;
 
 final class ConsoleConfig
 {
@@ -13,6 +14,9 @@ final class ConsoleConfig
 
         /** @var \Tempest\Console\ConsoleCommand[] $commands */
         public array $commands = [],
+
+        /** @var class-string<ConsoleWidget>[] $widgets */
+        public array $widgets = [],
     ) {
     }
 
@@ -29,6 +33,18 @@ final class ConsoleConfig
 
             $this->commands[$alias] = $consoleCommand;
         }
+
+        return $this;
+    }
+
+    /**
+     * @param class-string<ConsoleWidget> $widget
+     *
+     * @return $this
+     */
+    public function addWidget(string $widget): self
+    {
+        $this->widgets[] = $widget;
 
         return $this;
     }
