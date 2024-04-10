@@ -8,7 +8,6 @@ use Attribute;
 use ReflectionMethod;
 use Tempest\Support\ArrayHelper;
 use Tempest\Console\Widgets\ConsoleWidget;
-use Tempest\Console\Widgets\ConsoleWidgetDefinition;
 
 #[Attribute]
 final class ConsoleCommand
