@@ -9,7 +9,6 @@ use Tempest\Console\ConsoleCommand;
 
 final readonly class Package
 {
-
     #[ConsoleCommand]
     public function list(): void
     {

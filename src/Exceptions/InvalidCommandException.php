@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Tempest\Console\Exceptions;
 
-use BackedEnum;
-use Tempest\Validation\Rules\Enum;
-use Tempest\Validation\Rules\Length;
-use Tempest\Console\ConsoleArgumentBag;
-use Tempest\Console\ConsoleInputArgument;
+use Exception;
 use Tempest\Console\Actions\RenderConsoleCommand;
 use Tempest\Console\Console;
+use Tempest\Console\ConsoleArgumentBag;
 use Tempest\Console\ConsoleArgumentDefinition;
 use Tempest\Console\ConsoleCommand;
+use Tempest\Console\ConsoleInputArgument;
+use Tempest\Validation\Rules\Length;
 
 final class InvalidCommandException extends ConsoleException
 {
@@ -50,7 +49,7 @@ final class InvalidCommandException extends ConsoleException
 
     /**
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function promptForMissingArguments(Console $console): array
     {

@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console;
 
-use Tempest\Console\Console;
-use Tempest\Console\ConsoleCommand;
-use Tempest\Console\ConsoleArgument;
 use App\Enums\AuthenticationStrategy;
+use Tempest\Console\Console;
+use Tempest\Console\ConsoleArgument;
+use Tempest\Console\ConsoleCommand;
 
 final readonly class CommandWithEnumArgs
 {
-
     public function __construct(
         protected Console $console,
-    )
-    {
+    ) {
 
     }
 
@@ -34,10 +34,8 @@ final readonly class CommandWithEnumArgs
             aliases: ['token'],
         )]
         string $bearerToken,
-    )
-    {
+    ) {
         $this->console->writeln("First enum argument: {$strategy->value}");
         $this->console->writeln("Bearer token: {$bearerToken}");
     }
-
 }
