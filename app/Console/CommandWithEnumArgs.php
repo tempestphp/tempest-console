@@ -24,8 +24,7 @@ final readonly class CommandWithEnumArgs
     )]
     public function command(
         #[ConsoleArgument(
-            description: 'The first enum argument',
-            help: 'Extended help text for the first enum argument',
+            description: 'The authentication strategy',
             aliases: ['auth'],
         )]
         AuthenticationStrategy $strategy,
