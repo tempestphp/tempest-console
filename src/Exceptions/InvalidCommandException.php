@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Tempest\Console\Exceptions;
 
+use BackedEnum;
+use Tempest\Validation\Rules\Enum;
+use Tempest\Validation\Rules\Length;
+use Tempest\Console\ConsoleArgumentBag;
+use Tempest\Console\ConsoleInputArgument;
 use Tempest\Console\Actions\RenderConsoleCommand;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleArgumentDefinition;
@@ -15,6 +20,7 @@ final class InvalidCommandException extends ConsoleException
         private readonly ConsoleCommand $consoleCommand,
         /** @var \Tempest\Console\ConsoleArgumentDefinition[] $invalidDefinitions */
         private readonly array $invalidDefinitions,
+        private readonly ConsoleArgumentBag $bag,
     ) {
     }
 
@@ -32,5 +38,41 @@ final class InvalidCommandException extends ConsoleException
         if ($missingArguments) {
             $console->writeln("Missing arguments: {$missingArguments}");
         }
+
+        $fixedArguments = $this->promptForMissingArguments($console);
+
+        foreach ($fixedArguments as $argument) {
+            $this->bag->add($argument);
+        }
+
+        throw new MistypedCommandException($this->consoleCommand->getName());
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    private function promptForMissingArguments(Console $console): array
+    {
+        $arguments = [];
+
+        foreach ($this->invalidDefinitions as $definition) {
+            if (! $definition->hasDefault) {
+                $value = $this->resolveValue($definition, $console);
+
+                $arguments[] = new ConsoleInputArgument(name: $definition->name, position: $definition->position, value: $value);
+            }
+        }
+
+        return $arguments;
+    }
+
+    private function resolveValue(ConsoleArgumentDefinition $definition, Console $console): mixed
+    {
+        return match (true) {
+            $definition->choices !== [] => $console->ask($definition->name, $definition->choices),
+            $definition->type === 'bool' => $console->confirm($definition->name),
+            default => $console->ask($definition->name, validation: [new Length(min: 1)]),
+        };
     }
 }

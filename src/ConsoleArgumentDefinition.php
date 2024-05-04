@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tempest\Console;
 
+use BackedEnum;
 use ReflectionNamedType;
 use ReflectionParameter;
 
@@ -18,6 +19,7 @@ final readonly class ConsoleArgumentDefinition
         public ?string $description = null,
         public array $aliases = [],
         public ?string $help = null,
+        public array $choices = [],
     ) {
     }
 
@@ -36,6 +38,10 @@ final readonly class ConsoleArgumentDefinition
             $typeName = '';
         }
 
+        if (enum_exists($typeName) && is_subclass_of($typeName, BackedEnum::class)) {
+            $choices = array_map(fn (BackedEnum $case) => $case->value, $typeName::cases());
+        }
+
         return new ConsoleArgumentDefinition(
             name: $parameter->getName(),
             type: $typeName,
@@ -45,6 +51,7 @@ final readonly class ConsoleArgumentDefinition
             description: $attribute?->description,
             aliases: $attribute->aliases ?? [],
             help: $attribute?->help,
+            choices: $choices ?? [],
         );
     }
 

@@ -39,7 +39,8 @@ final class ConsoleInputBuilder
         if (count($invalidDefinitions)) {
             throw new InvalidCommandException(
                 $this->command,
-                $invalidDefinitions
+                $invalidDefinitions,
+                $this->argumentBag,
             );
         }
 
