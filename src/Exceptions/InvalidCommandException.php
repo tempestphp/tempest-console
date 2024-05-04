@@ -48,8 +48,9 @@ final class InvalidCommandException extends ConsoleException
     }
 
     /**
+     * @param Console $console
+     *
      * @return array
-     * @throws Exception
      */
     private function promptForMissingArguments(Console $console): array
     {
