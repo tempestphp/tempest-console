@@ -10,25 +10,59 @@ use Tempest\Console\Commands\SchedulerRunInvocationCommand;
 final class GenericScheduler implements Scheduler
 {
     public const string CACHE_PATH = __DIR__ . '/last-schedule-run.cache.php';
+    public const string INTERRUPT_PATH = __DIR__ . '/last-interrupt.cache.php';
+
+    private DateTime $end;
+    private DateTime $start;
+    private int $pid;
 
     public function __construct(
         private SchedulerConfig $config,
         private ScheduledInvocationExecutor $executor,
+        ?int $pid = null,
     ) {
+        $this->pid = $pid ?? getmypid();
     }
 
     public function run(?DateTime $date = null): void
     {
-        $date ??= new DateTime();
+        $this->start = $date ?? new DateTime();
+        $secondsToNextMinute = 60 - (int) $this->start->format('s');
 
-        $commands = $this->getInvocationsToRun($date);
+        // Calculate the end time when the scheduler should stop, since we want to preserve start-of-minute accuracy
+        $this->end = (clone $this->start)->modify("+$secondsToNextMinute seconds");
 
-        foreach ($commands as $command) {
-            $this->execute($command);
+        $this->obtainInterruptLock();
+
+        // Current reference time, initially set to the start time
+        $currentReferenceTime = clone $this->start;
+
+        while ($currentReferenceTime < $this->end) {
+            if ($this->shouldInterrupt($currentReferenceTime)) {
+                break;
+            }
+
+            // Calculate the next second start time
+            $nextSecondStart = (clone $currentReferenceTime)->modify('+1 second');
+
+            $commands = $this->getInvocationsToRun($currentReferenceTime);
+
+            foreach ($commands as $command) {
+                $this->execute($command);
+            }
+
+            // Calculate how much we should wait to preserve start-of-second accuracy
+            $sleepTime = ((int) $nextSecondStart->format('u') - (int) $currentReferenceTime->format('u')) ?: 1;
+
+            if ($sleepTime > 0) {
+                usleep($sleepTime * 1_000_000);
+            }
+
+            $currentReferenceTime = $nextSecondStart;
         }
     }
 
-    private function execute(ScheduledInvocation $invocation): void
+    protected function execute(ScheduledInvocation $invocation): void
     {
         $command = $this->compileInvocation($invocation);
 
@@ -102,5 +136,36 @@ final class GenericScheduler implements Scheduler
         }
 
         file_put_contents(self::CACHE_PATH, serialize($lastRuns));
+    }
+
+    private function shouldInterrupt(DateTime $currentReferenceTime): bool
+    {
+        if (! file_exists(self::INTERRUPT_PATH)) {
+            return false;
+        }
+
+        $content = unserialize(file_get_contents(self::INTERRUPT_PATH));
+
+        if ($content['pid'] !== $this->pid) {
+            return true;
+        }
+
+        if ($currentReferenceTime > $content['time']) {
+            return false;
+        }
+
+        return false;
+    }
+
+    private function obtainInterruptLock(): void
+    {
+        if (file_exists(self::INTERRUPT_PATH)) {
+            @unlink(self::INTERRUPT_PATH);
+        }
+
+        file_put_contents(self::INTERRUPT_PATH, serialize([
+            'pid' => $this->pid,
+            'time' => $this->end,
+        ]));
     }
 }
