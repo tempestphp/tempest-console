@@ -10,7 +10,7 @@ use Tempest\Console\Commands\SchedulerRunInvocationCommand;
 final class GenericScheduler implements Scheduler
 {
     public const string CACHE_PATH = __DIR__ . '/last-schedule-run.cache.php';
-    public const string INTERRUPT_PATH = __DIR__ . '/last-interrupt.cache.php';
+    public const string INTERRUPT_PATH = __DIR__ . '/schedule.lock.cache.php';
 
     private DateTime $end;
     private DateTime $start;
