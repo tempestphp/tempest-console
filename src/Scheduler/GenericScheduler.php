@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tempest\Console\Scheduler;
 
 use DateTime;
+use Tempest\Console\ConsoleOutput;
 use Tempest\Console\Commands\SchedulerRunInvocationCommand;
 
 final class GenericScheduler implements Scheduler
@@ -51,12 +52,8 @@ final class GenericScheduler implements Scheduler
                 $this->execute($command);
             }
 
-            // Calculate how much we should wait to preserve start-of-second accuracy
-            $sleepTime = ((int) $nextSecondStart->format('u') - (int) $currentReferenceTime->format('u')) ?: 1;
-
-            if ($sleepTime > 0) {
-                usleep($sleepTime * 1_000_000);
-            }
+            // todo: once we have a date lib supporting microseconds, we should subtract delta time from this, so it always run at the start of the second
+            usleep(1_000_000);
 
             $currentReferenceTime = $nextSecondStart;
         }
