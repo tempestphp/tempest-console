@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tempest\Console\Scheduler;
 
 use DateTime;
-use Tempest\Console\ConsoleOutput;
 use Tempest\Console\Commands\SchedulerRunInvocationCommand;
 
 final class GenericScheduler implements Scheduler
