@@ -9,8 +9,8 @@ use Tempest\Console\Commands\SchedulerRunInvocationCommand;
 
 final class GenericScheduler implements Scheduler
 {
-    public const string CACHE_PATH = __DIR__ . '/last-schedule-run.cache.php';
-    public const string INTERRUPT_PATH = __DIR__ . '/schedule.lock.cache.php';
+    public const string CACHE_PATH = __DIR__ . '/schedule.last-run.cache.php';
+    public const string EXECUTION_LOCK = __DIR__ . '/schedule.execution-lock.cache.php';
 
     private DateTime $end;
     private DateTime $start;
@@ -32,7 +32,7 @@ final class GenericScheduler implements Scheduler
         // Calculate the end time when the scheduler should stop, since we want to preserve start-of-minute accuracy
         $this->end = (clone $this->start)->modify("+$secondsToNextMinute seconds");
 
-        $this->obtainInterruptLock();
+        $this->obtainExecutionLock();
 
         // Current reference time, initially set to the start time
         $currentReferenceTime = clone $this->start;
@@ -51,7 +51,6 @@ final class GenericScheduler implements Scheduler
                 $this->execute($command);
             }
 
-            // todo: once we have a date lib supporting microseconds, we should subtract delta time from this, so it always run at the start of the second
             usleep(1_000_000);
 
             $currentReferenceTime = $nextSecondStart;
@@ -136,11 +135,11 @@ final class GenericScheduler implements Scheduler
 
     private function shouldInterrupt(DateTime $currentReferenceTime): bool
     {
-        if (! file_exists(self::INTERRUPT_PATH)) {
+        if (! file_exists(self::EXECUTION_LOCK)) {
             return false;
         }
 
-        $content = unserialize(file_get_contents(self::INTERRUPT_PATH));
+        $content = unserialize(file_get_contents(self::EXECUTION_LOCK));
 
         if ($content['pid'] !== $this->pid) {
             return true;
@@ -153,13 +152,13 @@ final class GenericScheduler implements Scheduler
         return false;
     }
 
-    private function obtainInterruptLock(): void
+    private function obtainExecutionLock(): void
     {
-        if (file_exists(self::INTERRUPT_PATH)) {
-            @unlink(self::INTERRUPT_PATH);
+        if (file_exists(self::EXECUTION_LOCK)) {
+            @unlink(self::EXECUTION_LOCK);
         }
 
-        file_put_contents(self::INTERRUPT_PATH, serialize([
+        file_put_contents(self::EXECUTION_LOCK, serialize([
             'pid' => $this->pid,
             'time' => $this->end,
         ]));
