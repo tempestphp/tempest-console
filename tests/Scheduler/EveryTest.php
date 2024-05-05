@@ -22,6 +22,24 @@ final class EveryTest extends TestCase
         $this->assertSame(1, $interval->inSeconds());
     }
 
+    public function test_every_quarter_minute_gets_transformed_to_interval()
+    {
+        $every = Every::QUARTER_MINUTE;
+        $interval = $every->toInterval();
+
+        $this->assertSame(15, $interval->seconds);
+        $this->assertSame(15, $interval->inSeconds());
+    }
+
+    public function test_every_half_minute_gets_transformed_to_interval()
+    {
+        $every = Every::HALF_MINUTE;
+        $interval = $every->toInterval();
+
+        $this->assertSame(30, $interval->seconds);
+        $this->assertSame(30, $interval->inSeconds());
+    }
+
     public function test_every_minute_gets_transformed_to_interval()
     {
         $every = Every::MINUTE;
