@@ -39,7 +39,7 @@ class InvalidCommandExceptionTest extends TestCase
     public function test_it_will_prompt_for_missing_arguments()
     {
         $this->console
-            ->call('enums:command')
+            ->call('auth:command')
             ->assertContains('Missing arguments: auth, token');
     }
 }

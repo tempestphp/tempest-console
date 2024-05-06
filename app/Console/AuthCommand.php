@@ -8,7 +8,7 @@ use Tempest\Console\Console;
 use Tempest\Console\ConsoleArgument;
 use Tempest\Console\ConsoleCommand;
 
-final readonly class CommandWithEnumArgs
+final readonly class AuthCommand
 {
     public function __construct(
         protected Console $console,
