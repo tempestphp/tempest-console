@@ -56,7 +56,7 @@ final class ConsoleArgumentBag
     {
         foreach ($this->arguments as $argument) {
             if ($argumentDefinition->matchesArgument($argument)) {
-                return $this->castArgument($argument, $argumentDefinition);
+                return $argument;
             }
         }
 
@@ -81,23 +81,5 @@ final class ConsoleArgumentBag
     public function getCommandName(): string
     {
         return $this->path[1] ?? '';
-    }
-
-    private function castArgument(ConsoleInputArgument $argument, ConsoleArgumentDefinition $argumentDefinition): ConsoleInputArgument
-    {
-        $value = match($argumentDefinition->type) {
-            'bool' => filter_var($argument->value, FILTER_VALIDATE_BOOLEAN),
-            'int' => (int) $argument->value,
-            'float' => (float) $argument->value,
-            default => enum_exists($argumentDefinition->type) && is_subclass_of($argumentDefinition->type, BackedEnum::class)
-                ? $argumentDefinition->type::from($argument->value)
-                : $argument->value
-        };
-
-        return new ConsoleInputArgument(
-            name: $argument->name,
-            position: $argument->position,
-            value: $value,
-        );
     }
 }

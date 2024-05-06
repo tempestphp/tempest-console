@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console;
 
-use App\Enums\AuthenticationStrategy;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleArgument;
 use Tempest\Console\ConsoleCommand;
@@ -18,23 +17,22 @@ final readonly class CommandWithEnumArgs
     }
 
     #[ConsoleCommand(
-        name: 'enums:command',
-        description: 'Command with enum arguments',
-        help: 'Help text for command with enum arguments'
+        name: 'auth:command',
+        description: 'Command that',
     )]
     public function command(
         #[ConsoleArgument(
             description: 'The authentication strategy',
             aliases: ['auth'],
         )]
-        AuthenticationStrategy $strategy,
+        string $strategy,
         #[ConsoleArgument(
             description: 'The bearer token for authentication',
             aliases: ['token'],
         )]
         string $bearerToken,
     ) {
-        $this->console->writeln("First enum argument: {$strategy->value}");
+        $this->console->writeln("Strategy: {$strategy}");
         $this->console->writeln("Bearer token: {$bearerToken}");
     }
 }

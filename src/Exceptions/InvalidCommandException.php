@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tempest\Console\Exceptions;
 
-use Exception;
 use Tempest\Console\Actions\RenderConsoleCommand;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleArgumentBag;
@@ -70,7 +69,6 @@ final class InvalidCommandException extends ConsoleException
     private function resolveValue(ConsoleArgumentDefinition $definition, Console $console): mixed
     {
         return match (true) {
-            $definition->choices !== [] => $console->ask($definition->name, $definition->choices),
             $definition->type === 'bool' => $console->confirm($definition->name),
             default => $console->ask($definition->name, validation: [new Length(min: 1)]),
         };
