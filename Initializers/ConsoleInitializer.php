@@ -22,7 +22,7 @@ use Tempest\Container\Singleton;
 use Tempest\Highlight\Highlighter;
 
 #[Singleton]
-class ConsoleInitializer implements Initializer
+final class ConsoleInitializer implements Initializer
 {
     public function initialize(Container $container): Console
     {
