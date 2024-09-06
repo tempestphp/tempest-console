@@ -7,15 +7,15 @@ namespace Tempest\Console\Commands;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleCommand;
 use Tempest\Container\Container;
+use Tempest\Core\AppConfig;
 use Tempest\Core\Discovery;
-use Tempest\Core\Kernel;
 
 final readonly class DiscoveryClearCommand
 {
     public function __construct(
         private Container $container,
         private Console $console,
-        private Kernel $kernel,
+        private AppConfig $appConfig,
     ) {
     }
 
@@ -26,7 +26,7 @@ final readonly class DiscoveryClearCommand
     )]
     public function __invoke(): void
     {
-        foreach ($this->kernel->discoveryClasses as $discoveryClass) {
+        foreach ($this->appConfig->discoveryClasses as $discoveryClass) {
             /** @var Discovery $discovery */
             $discovery = $this->container->get($discoveryClass);
 

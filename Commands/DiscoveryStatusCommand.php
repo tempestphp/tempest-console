@@ -6,13 +6,13 @@ namespace Tempest\Console\Commands;
 
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleCommand;
-use Tempest\Core\Kernel;
+use Tempest\Core\AppConfig;
 
 final readonly class DiscoveryStatusCommand
 {
     public function __construct(
         private Console $console,
-        private Kernel $kernel,
+        private AppConfig $appConfig,
     ) {
     }
 
@@ -25,7 +25,7 @@ final readonly class DiscoveryStatusCommand
     {
         $this->console->info('Loaded Discovery classes');
 
-        foreach ($this->kernel->discoveryClasses as $discoveryClass) {
+        foreach ($this->appConfig->discoveryClasses as $discoveryClass) {
             $this->console->writeln('- ' . $discoveryClass);
         }
 
@@ -33,7 +33,7 @@ final readonly class DiscoveryStatusCommand
 
         $this->console->info('Folders included in Tempest');
 
-        foreach ($this->kernel->discoveryLocations as $discoveryLocation) {
+        foreach ($this->appConfig->discoveryLocations as $discoveryLocation) {
             $this->console->writeln('- '. $discoveryLocation->path);
         }
     }
