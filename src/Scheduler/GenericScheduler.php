@@ -7,7 +7,6 @@ namespace Tempest\Console\Scheduler;
 use DateTime;
 use Tempest\Console\Scheduler;
 use Tempest\Console\ShellExecutor;
-use function Tempest\event;
 
 final readonly class GenericScheduler implements Scheduler
 {
@@ -27,8 +26,6 @@ final readonly class GenericScheduler implements Scheduler
 
         foreach ($commands as $command) {
             $this->execute($command);
-
-            event(new ScheduledInvocationRan($command));
         }
     }
 
@@ -50,7 +47,6 @@ final readonly class GenericScheduler implements Scheduler
         ]);
     }
 
-    /** @return \Tempest\Console\Scheduler\ScheduledInvocation[] */
     private function getInvocationsToRun(DateTime $date): array
     {
         $previousRuns = $this->getPreviousRuns();
@@ -83,19 +79,16 @@ final readonly class GenericScheduler implements Scheduler
         return unserialize(file_get_contents(self::CACHE_PATH), ['allowed_classes' => false]);
     }
 
-    /** @param ScheduledInvocation[] $ranInvocations */
+    /**
+     * @param ScheduledInvocation[] $ranInvocations
+     *
+     */
     private function markInvocationsAsRun(array $ranInvocations, DateTime $ranAt): void
     {
         $lastRuns = $this->getPreviousRuns();
 
         foreach ($ranInvocations as $invocation) {
             $lastRuns[$invocation->handler->getName()] = $ranAt->getTimestamp();
-        }
-
-        $directory = dirname(self::CACHE_PATH);
-
-        if (! is_dir($directory)) {
-            mkdir(directory: $directory, recursive: true);
         }
 
         file_put_contents(self::CACHE_PATH, serialize($lastRuns));

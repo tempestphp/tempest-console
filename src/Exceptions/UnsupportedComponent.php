@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tempest\Console\Exceptions;
 
 use Tempest\Console\Console;
-use Tempest\Console\InteractiveConsoleComponent;
+use Tempest\Console\InteractiveComponent;
 
 final class UnsupportedComponent extends ConsoleException
 {
-    public function __construct(InteractiveConsoleComponent $component)
+    public function __construct(InteractiveComponent $component)
     {
         $className = $component::class;
 

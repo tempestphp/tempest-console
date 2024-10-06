@@ -6,9 +6,9 @@ namespace Tempest\Console\Components\Static;
 
 use Closure;
 use Tempest\Console\Console;
-use Tempest\Console\StaticConsoleComponent;
+use Tempest\Console\StaticComponent;
 
-final readonly class StaticSearchComponent implements StaticConsoleComponent
+final readonly class StaticSearchComponent implements StaticComponent
 {
     public const string SEARCH_AGAIN = 'Search again';
 

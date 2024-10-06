@@ -6,11 +6,11 @@ namespace Tempest\Console\Components\Interactive;
 
 use Tempest\Console\HandlesKey;
 use Tempest\Console\HasCursor;
-use Tempest\Console\InteractiveConsoleComponent;
+use Tempest\Console\InteractiveComponent;
 use Tempest\Console\Key;
 use Tempest\Console\Point;
 
-final class PasswordComponent implements InteractiveConsoleComponent, HasCursor
+final class PasswordComponent implements InteractiveComponent, HasCursor
 {
     public string $password = '';
 

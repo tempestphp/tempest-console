@@ -7,11 +7,11 @@ namespace Tempest\Console\Components\Interactive;
 use Tempest\Console\Components\Static\StaticSingleChoiceComponent;
 use Tempest\Console\HandlesKey;
 use Tempest\Console\HasStaticComponent;
-use Tempest\Console\InteractiveConsoleComponent;
+use Tempest\Console\InteractiveComponent;
 use Tempest\Console\Key;
-use Tempest\Console\StaticConsoleComponent;
+use Tempest\Console\StaticComponent;
 
-final class SingleChoiceComponent implements InteractiveConsoleComponent, HasStaticComponent
+final class SingleChoiceComponent implements InteractiveComponent, HasStaticComponent
 {
     public int $selectedOption;
 
@@ -86,7 +86,7 @@ final class SingleChoiceComponent implements InteractiveConsoleComponent, HasSta
         }
     }
 
-    public function getStaticComponent(): StaticConsoleComponent
+    public function getStaticComponent(): StaticComponent
     {
         return new StaticSingleChoiceComponent(
             question: $this->question,

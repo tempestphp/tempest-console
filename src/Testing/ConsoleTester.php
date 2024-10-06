@@ -54,7 +54,7 @@ final class ConsoleTester
         $console = new GenericConsole(
             output: $memoryOutputBuffer,
             input: $memoryInputBuffer,
-            highlighter: $clone->container->get(Highlighter::class, 'console'),
+            highlighter: $clone->container->get(Highlighter::class),
             executeConsoleCommand: $clone->container->get(ExecuteConsoleCommand::class),
         );
 

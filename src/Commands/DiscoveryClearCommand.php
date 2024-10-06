@@ -34,10 +34,10 @@ final readonly class DiscoveryClearCommand
 
             $this->console->writeln(implode('', [
                 "<em>{$discoveryClass}</em>",
-                ' cleared successfully',
+                ' cleared successful',
             ]));
         }
 
-        $this->console->success('Done');
+        $this->console->writeln('Done');
     }
 }

@@ -8,6 +8,8 @@ use Tempest\Console\Initializers\Invocation;
 
 interface ConsoleMiddleware
 {
-    /** @param callable(Invocation $invocation): ExitCode $next */
+    /**
+     * @param callable(Invocation $invocation): ExitCode $next
+     */
     public function __invoke(Invocation $invocation, callable $next): ExitCode;
 }

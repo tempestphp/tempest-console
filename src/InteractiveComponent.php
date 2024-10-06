@@ -6,7 +6,7 @@ namespace Tempest\Console;
 
 use Generator;
 
-interface InteractiveConsoleComponent
+interface InteractiveComponent
 {
     public function render(): Generator|string;
 

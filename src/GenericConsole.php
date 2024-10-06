@@ -16,7 +16,6 @@ use Tempest\Console\Components\Interactive\TextBoxComponent;
 use Tempest\Console\Components\InteractiveComponentRenderer;
 use Tempest\Console\Exceptions\UnsupportedComponent;
 use Tempest\Console\Highlight\TempestConsoleLanguage\TempestConsoleLanguage;
-use Tempest\Container\Tag;
 use Tempest\Highlight\Highlighter;
 
 final class GenericConsole implements Console
@@ -30,7 +29,6 @@ final class GenericConsole implements Console
     public function __construct(
         private readonly OutputBuffer $output,
         private readonly InputBuffer $input,
-        #[Tag('console')]
         private readonly Highlighter $highlighter,
         private readonly ExecuteConsoleCommand $executeConsoleCommand,
     ) {
@@ -122,7 +120,7 @@ final class GenericConsole implements Console
         return $this;
     }
 
-    public function component(InteractiveConsoleComponent $component, array $validation = []): mixed
+    public function component(InteractiveComponent $component, array $validation = []): mixed
     {
         if ($this->interactiveSupported()) {
             return $this->componentRenderer->render($this, $component, $validation);
@@ -144,7 +142,7 @@ final class GenericConsole implements Console
         array $validation = [],
     ): string|array {
         if ($options === null || $options === []) {
-            $component = new TextBoxComponent($question, $default);
+            $component = new TextBoxComponent($question);
         } elseif ($multiple) {
             $component = new MultipleChoiceComponent(
                 question: $question,
