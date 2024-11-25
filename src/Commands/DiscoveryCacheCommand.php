@@ -6,12 +6,15 @@ namespace Tempest\Console\Commands;
 
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleCommand;
+use Tempest\Console\HasConsole;
 use Tempest\Container\Container;
 use Tempest\Core\Discovery;
 use Tempest\Core\Kernel;
 
-final readonly class DiscoveryClearCommand
+final readonly class DiscoveryCacheCommand
 {
+    use HasConsole;
+
     public function __construct(
         private Container $container,
         private Console $console,
@@ -20,9 +23,9 @@ final readonly class DiscoveryClearCommand
     }
 
     #[ConsoleCommand(
-        name: 'discovery:clear',
-        description: 'Clear all cached discovery files',
-        aliases: ['dc'],
+        name: 'discovery:cache',
+        description: 'Generate and store the discovery cache',
+        aliases: ['discovery:store', 'discovery:warm'],
     )]
     public function __invoke(): void
     {
@@ -30,12 +33,12 @@ final readonly class DiscoveryClearCommand
             /** @var Discovery $discovery */
             $discovery = $this->container->get($discoveryClass);
 
-            $discovery->destroyCache();
+            $discovery->storeCache();
 
-            $this->console->writeln(implode('', [
-                "<em>{$discoveryClass}</em>",
-                ' cleared successfully',
-            ]));
+            $this->writeln(sprintf(
+                '<em>%s</em> cached successful',
+                $discoveryClass,
+            ));
         }
 
         $this->console->success('Done');
