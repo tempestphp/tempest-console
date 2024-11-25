@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tempest\Console\Components\Static;
 
 use Tempest\Console\Console;
-use Tempest\Console\StaticConsoleComponent;
+use Tempest\Console\StaticComponent;
 
-final readonly class StaticSingleChoiceComponent implements StaticConsoleComponent
+final readonly class StaticSingleChoiceComponent implements StaticComponent
 {
     public function __construct(
         public string $question,
@@ -17,12 +17,8 @@ final readonly class StaticSingleChoiceComponent implements StaticConsoleCompone
     ) {
     }
 
-    public function render(Console $console): ?string
+    public function render(Console $console): string
     {
-        if (! $console->supportsPrompting()) {
-            return $this->default;
-        }
-
         $console->write("<h2>{$this->question}</h2> ");
 
         $parsedOptions = [];

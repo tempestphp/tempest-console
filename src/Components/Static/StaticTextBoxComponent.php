@@ -5,24 +5,19 @@ declare(strict_types=1);
 namespace Tempest\Console\Components\Static;
 
 use Tempest\Console\Console;
-use Tempest\Console\StaticConsoleComponent;
+use Tempest\Console\StaticComponent;
 
-final readonly class StaticTextBoxComponent implements StaticConsoleComponent
+final readonly class StaticTextBoxComponent implements StaticComponent
 {
     public function __construct(
         public string $label,
-        public ?string $default = null,
     ) {
     }
 
-    public function render(Console $console): ?string
+    public function render(Console $console): string
     {
-        if (! $console->supportsPrompting()) {
-            return $this->default;
-        }
+        $console->write("<question>{$this->label}</question> ");
 
-        $console->write("<question>{$this->label}</question> ({$this->default})");
-
-        return trim($console->readln()) ?: $this->default;
+        return trim($console->readln());
     }
 }

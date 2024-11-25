@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Tempest\Console;
 
 use Closure;
-use Tempest\Highlight\Language;
 
 interface Console
 {
-    public function call(string $command): ExitCode|int;
+    public function call(string $command): ExitCode;
 
     public function readln(): string;
 
@@ -19,12 +18,10 @@ interface Console
 
     public function writeln(string $line = ''): self;
 
-    public function writeWithLanguage(string $contents, Language $language): self;
-
     /**
      * @param \Tempest\Validation\Rule[] $validation
      */
-    public function component(InteractiveConsoleComponent $component, array $validation = []): mixed;
+    public function component(InteractiveComponent $component, array $validation = []): mixed;
 
     /**
      * @param mixed|null $default
@@ -37,7 +34,7 @@ interface Console
         bool $multiple = false,
         bool $asList = false,
         array $validation = [],
-    ): null|string|array;
+    ): string|array;
 
     public function confirm(string $question, bool $default = false): bool;
 
@@ -48,7 +45,7 @@ interface Console
     /**
      * @param Closure(string $search): array $search
      */
-    public function search(string $label, Closure $search, ?string $default = null): mixed;
+    public function search(string $label, Closure $search): mixed;
 
     public function info(string $line): self;
 
@@ -59,12 +56,4 @@ interface Console
     public function when(mixed $expression, callable $callback): self;
 
     public function withLabel(string $label): self;
-
-    public function supportsTty(): bool;
-
-    public function supportsPrompting(): bool;
-
-    public function disableTty(): self;
-
-    public function disablePrompting(): self;
 }

@@ -8,21 +8,20 @@ use Tempest\Console\Actions\RenderConsoleCommand;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleConfig;
 use Tempest\Console\ConsoleMiddleware;
-use Tempest\Console\ConsoleMiddlewareCallable;
 use Tempest\Console\ExitCode;
 use Tempest\Console\Initializers\Invocation;
-use Tempest\Core\DiscoveryCache;
+use Tempest\Core\Kernel;
 
 final readonly class OverviewMiddleware implements ConsoleMiddleware
 {
     public function __construct(
         private Console $console,
+        private Kernel $kernel,
         private ConsoleConfig $consoleConfig,
-        private DiscoveryCache $discoveryCache,
     ) {
     }
 
-    public function __invoke(Invocation $invocation, ConsoleMiddlewareCallable $next): ExitCode|int
+    public function __invoke(Invocation $invocation, callable $next): ExitCode
     {
         if (! $invocation->argumentBag->getCommandName()) {
             $this->renderOverview(showHidden: $invocation->argumentBag->has('--all', '-a'));
@@ -36,7 +35,11 @@ final readonly class OverviewMiddleware implements ConsoleMiddleware
     private function renderOverview(bool $showHidden = false): void
     {
         $this->console
-            ->writeln("<h1>{$this->consoleConfig->name}</h1>");
+            ->writeln("<h1>{$this->consoleConfig->name}</h1>")
+            ->when(
+                expression: $this->kernel->discoveryCache,
+                callback: fn (Console $console) => $console->error('Discovery cache is enabled!')
+            );
 
         /** @var \Tempest\Console\ConsoleCommand[][] $commands */
         $commands = [];
@@ -64,11 +67,5 @@ final readonly class OverviewMiddleware implements ConsoleMiddleware
                 (new RenderConsoleCommand($this->console))($consoleCommand);
             }
         }
-
-        $this->console
-            ->when(
-                expression: ! $this->discoveryCache->isValid(),
-                callback: fn (Console $console) => $console->writeln(PHP_EOL . '<error>Discovery cache invalid. Run discovery:generate to enable discovery caching.</error>')
-            );
     }
 }

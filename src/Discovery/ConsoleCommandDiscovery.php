@@ -6,21 +6,22 @@ namespace Tempest\Console\Discovery;
 
 use Tempest\Console\ConsoleCommand;
 use Tempest\Console\ConsoleConfig;
+use Tempest\Container\Container;
 use Tempest\Core\Discovery;
-use Tempest\Core\DiscoveryLocation;
-use Tempest\Core\IsDiscovery;
+use Tempest\Core\HandlesDiscoveryCache;
 use Tempest\Reflection\ClassReflector;
+use Tempest\Reflection\MethodReflector;
 
-final class ConsoleCommandDiscovery implements Discovery
+final readonly class ConsoleCommandDiscovery implements Discovery
 {
-    use IsDiscovery;
+    use HandlesDiscoveryCache;
 
     public function __construct(
-        private readonly ConsoleConfig $consoleConfig,
+        private ConsoleConfig $consoleConfig,
     ) {
     }
 
-    public function discover(DiscoveryLocation $location, ClassReflector $class): void
+    public function discover(ClassReflector $class): void
     {
         foreach ($class->getPublicMethods() as $method) {
             $consoleCommand = $method->getAttribute(ConsoleCommand::class);
@@ -29,14 +30,19 @@ final class ConsoleCommandDiscovery implements Discovery
                 continue;
             }
 
-            $this->discoveryItems->add($location, [$method, $consoleCommand]);
+            $this->consoleConfig->addCommand($method, $consoleCommand);
         }
     }
 
-    public function apply(): void
+    public function createCachePayload(): string
     {
-        foreach ($this->discoveryItems as [$method, $consoleCommand]) {
-            $this->consoleConfig->addCommand($method, $consoleCommand);
-        }
+        return serialize($this->consoleConfig->commands);
+    }
+
+    public function restoreCachePayload(Container $container, string $payload): void
+    {
+        $commands = unserialize($payload, ['allowed_classes' => [ConsoleCommand::class, MethodReflector::class]]);
+
+        $this->consoleConfig->commands = $commands;
     }
 }

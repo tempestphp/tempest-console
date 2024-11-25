@@ -8,7 +8,7 @@ use Fiber;
 use Tempest\Console\Console;
 use Tempest\Console\Exceptions\InterruptException;
 use Tempest\Console\HandlesKey;
-use Tempest\Console\InteractiveConsoleComponent;
+use Tempest\Console\InteractiveComponent;
 use Tempest\Console\Key;
 use Tempest\Console\Terminal\Terminal;
 use Tempest\Reflection\ClassReflector;
@@ -23,14 +23,14 @@ final class InteractiveComponentRenderer
 
     private bool $shouldRerender = true;
 
-    public function render(Console $console, InteractiveConsoleComponent $component, array $validation = []): mixed
+    public function render(Console $console, InteractiveComponent $component, array $validation = []): mixed
     {
         $clone = clone $this;
 
         return $clone->renderComponent($console, $component, $validation);
     }
 
-    private function renderComponent(Console $console, InteractiveConsoleComponent $component, array $validation = []): mixed
+    private function renderComponent(Console $console, InteractiveComponent $component, array $validation = []): mixed
     {
         $terminal = $this->createTerminal($console);
 
@@ -78,12 +78,12 @@ final class InteractiveComponentRenderer
         return null;
     }
 
-    private function applyKey(InteractiveConsoleComponent $component, Console $console, array $validation): mixed
+    private function applyKey(InteractiveComponent $component, Console $console, array $validation): mixed
     {
         [$keyBindings, $inputHandlers] = $this->resolveHandlers($component);
 
         while (true) {
-            usleep(100);
+            usleep(5000);
             $key = $console->read(16);
 
             // If there's no keypress, continue
@@ -140,10 +140,10 @@ final class InteractiveComponentRenderer
         }
     }
 
-    private function renderFrames(InteractiveConsoleComponent $component, Terminal $terminal): mixed
+    private function renderFrames(InteractiveComponent $component, Terminal $terminal): mixed
     {
         while (true) {
-            usleep(100);
+            usleep(5000);
 
             // If there are no updates,
             // we won't spend time re-rendering the same frame
@@ -177,7 +177,7 @@ final class InteractiveComponentRenderer
         }
     }
 
-    private function resolveHandlers(InteractiveConsoleComponent $component): array
+    private function resolveHandlers(InteractiveComponent $component): array
     {
         /** @var \Tempest\Reflection\MethodReflector[][] $keyBindings */
         $keyBindings = [];
@@ -224,7 +224,6 @@ final class InteractiveComponentRenderer
 
     private function closeTerminal(Terminal $terminal): void
     {
-        $terminal->cursor->moveDown()->clearLine()->moveUp();
         $terminal->switchToNormalMode();
         stream_set_blocking(STDIN, true);
     }

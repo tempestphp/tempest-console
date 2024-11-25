@@ -17,10 +17,14 @@ final readonly class ConsoleApplicationInitializer implements Initializer
     #[Singleton]
     public function initialize(Container $container): ConsoleApplication
     {
+        $argumentBag = new ConsoleArgumentBag($_SERVER['argv']);
+
+        $container->singleton(ConsoleArgumentBag::class, fn () => $argumentBag);
+
         $application = new ConsoleApplication(
             container: $container,
             appConfig: $container->get(AppConfig::class),
-            argumentBag: $container->get(ConsoleArgumentBag::class),
+            argumentBag: $argumentBag,
         );
 
         $container->singleton(Application::class, fn () => $application);

@@ -8,7 +8,10 @@ use Tempest\Console\Actions\ExecuteConsoleCommand;
 use Tempest\Console\Commands\ScheduleTaskCommand;
 use Tempest\Console\Components\InteractiveComponentRenderer;
 use Tempest\Console\Console;
+use Tempest\Console\Exceptions\ConsoleExceptionHandler;
 use Tempest\Console\GenericConsole;
+use Tempest\Console\Highlight\TempestTerminalTheme;
+use Tempest\Console\Highlight\TextTerminalTheme;
 use Tempest\Console\Input\ConsoleArgumentBag;
 use Tempest\Console\Input\StdinInputBuffer;
 use Tempest\Console\Input\UnsupportedInputBuffer;
@@ -35,23 +38,39 @@ final class ConsoleInitializer implements Initializer
 
     public function backgroundTaskConsole(Container $container): GenericConsole
     {
+        $textHighlighter = new Highlighter(new TextTerminalTheme());
+
+        $container->singleton(ConsoleExceptionHandler::class, fn () => new ConsoleExceptionHandler(
+            console: $container->get(Console::class),
+            highlighter: $textHighlighter,
+            argumentBag: $container->get(ConsoleArgumentBag::class),
+        ));
+
         return new GenericConsole(
             output: $container->get(LogOutputBuffer::class),
             input: new UnsupportedInputBuffer(),
-            highlighter: $container->get(Highlighter::class, tag: 'console'),
+            highlighter: $textHighlighter,
             executeConsoleCommand: $container->get(ExecuteConsoleCommand::class),
-            argumentBag: $container->get(ConsoleArgumentBag::class),
         );
     }
 
     public function cliConsole(Container $container): GenericConsole
     {
-        return (new GenericConsole(
+        $terminalHighlighter = new Highlighter(new TempestTerminalTheme());
+
+        $console = (new GenericConsole(
             output: $container->get(StdoutOutputBuffer::class),
             input: $container->get(StdinInputBuffer::class),
-            highlighter: $container->get(Highlighter::class, tag: 'console'),
+            highlighter: $terminalHighlighter,
             executeConsoleCommand: $container->get(ExecuteConsoleCommand::class),
-            argumentBag: $container->get(ConsoleArgumentBag::class),
         ))->setComponentRenderer($container->get(InteractiveComponentRenderer::class));
+
+        $container->singleton(ConsoleExceptionHandler::class, fn () => new ConsoleExceptionHandler(
+            console: $console,
+            highlighter: $terminalHighlighter,
+            argumentBag: $container->get(ConsoleArgumentBag::class),
+        ));
+
+        return $console;
     }
 }

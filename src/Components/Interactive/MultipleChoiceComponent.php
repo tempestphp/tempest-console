@@ -7,25 +7,20 @@ namespace Tempest\Console\Components\Interactive;
 use Tempest\Console\Components\Static\StaticMultipleChoiceComponent;
 use Tempest\Console\HandlesKey;
 use Tempest\Console\HasStaticComponent;
-use Tempest\Console\InteractiveConsoleComponent;
+use Tempest\Console\InteractiveComponent;
 use Tempest\Console\Key;
-use Tempest\Console\StaticConsoleComponent;
+use Tempest\Console\StaticComponent;
 
-final class MultipleChoiceComponent implements InteractiveConsoleComponent, HasStaticComponent
+final class MultipleChoiceComponent implements InteractiveComponent, HasStaticComponent
 {
     public array $selectedOptions = [];
 
-    public int|string $activeOption;
+    public int $activeOption;
 
     public function __construct(
         public string $question,
         public array $options,
-        public array $default = [],
     ) {
-        foreach ($this->default as $key => $value) {
-            $this->selectedOptions[array_is_list($options) ? $key : $value] = true;
-        }
-
         $this->activeOption = array_key_first($this->options);
     }
 
@@ -51,12 +46,12 @@ final class MultipleChoiceComponent implements InteractiveConsoleComponent, HasS
         return "Press <em>space</em> to select, <em>enter</em> to confirm, <em>ctrl+c</em> to cancel";
     }
 
-    public function isActive(int|string $key): bool
+    public function isActive(int $key): bool
     {
         return $this->activeOption === $key;
     }
 
-    public function isSelected(int|string $key): bool
+    public function isSelected(int $key): bool
     {
         return $this->selectedOptions[$key] ?? false;
     }
@@ -74,7 +69,7 @@ final class MultipleChoiceComponent implements InteractiveConsoleComponent, HasS
 
         foreach ($this->options as $key => $option) {
             if ($this->isSelected($key)) {
-                $result[$key] = $option;
+                $result[] = $option;
             }
         }
 
@@ -85,34 +80,29 @@ final class MultipleChoiceComponent implements InteractiveConsoleComponent, HasS
     #[HandlesKey(Key::LEFT)]
     public function up(): void
     {
-        $previousValue = prev($this->options);
+        $this->activeOption = $this->activeOption - 1;
 
-        if ($previousValue === false) {
-            end($this->options);
+        if ($this->activeOption < 0) {
+            $this->activeOption = count($this->options) - 1;
         }
-
-        $this->activeOption = key($this->options);
     }
 
     #[HandlesKey(Key::DOWN)]
     #[HandlesKey(Key::RIGHT)]
     public function down(): void
     {
-        $nextValue = next($this->options);
+        $this->activeOption = $this->activeOption + 1;
 
-        if ($nextValue === false) {
-            reset($this->options);
+        if ($this->activeOption > count($this->options) - 1) {
+            $this->activeOption = 0;
         }
-
-        $this->activeOption = key($this->options);
     }
 
-    public function getStaticComponent(): StaticConsoleComponent
+    public function getStaticComponent(): StaticComponent
     {
         return new StaticMultipleChoiceComponent(
-            question: $this->question,
-            options: $this->options,
-            default: $this->default,
+            $this->question,
+            $this->options,
         );
     }
 }

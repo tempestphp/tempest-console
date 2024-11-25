@@ -1,19 +1,17 @@
 {
     "name": "tempest/console",
-    "description": "The console component provides a way to build commands within the framework or standalone command-line applications.",
+    "description": "The PHP framework that gets out of your way.",
     "license": "MIT",
     "minimum-stability": "dev",
     "require": {
         "php": "^8.3",
-        "tempest/cache": "dev-main",
-        "tempest/core": "dev-main",
-        "tempest/container": "dev-main",
-        "tempest/debug": "dev-main",
-        "tempest/highlight": "^2.11.2",
-        "tempest/log": "dev-main",
-        "tempest/reflection": "dev-main",
-        "tempest/support": "dev-main",
-        "tempest/validation": "dev-main",
+        "tempest/core": "self.version",
+        "tempest/container": "self.version",
+        "tempest/highlight": "^2.0",
+        "tempest/log": "self.version",
+        "tempest/reflection": "self.version",
+        "tempest/support": "self.version",
+        "tempest/validation": "self.version",
         "ext-readline": "*"
     },
     "autoload": {
@@ -21,12 +19,5 @@
             "Tempest\\Console\\": "src"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Tempest\\Console\\Tests\\": "tests"
-        }
-    },
-    "bin": [
-        "bin/tempest"
-    ]
+    "bin": ["bin/tempest"]
 }

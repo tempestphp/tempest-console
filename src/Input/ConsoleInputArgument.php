@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tempest\Console\Input;
 
-use function Tempest\Support\str;
-
 final class ConsoleInputArgument
 {
     public function __construct(
@@ -58,28 +56,23 @@ final class ConsoleInputArgument
      */
     private static function parseNamedArgument(string $argument): array
     {
-        preg_match('/--(?<name>[\w-]+)((?<hasValue>=)\"?(?<value>(.*?))(\"|$))?/', $argument, $matches);
+        preg_match('/--(?<name>[\w]+)((?<hasValue>=)\"?(?<value>(.*?))(\"|$))?/', $argument, $matches);
 
-        $name = str($matches['name'] ?? null)->kebab()->toString();
-        $normalizedName = str($matches['name'] ?? null)->kebab()->replaceStart('no-', '')->toString();
-        $isNegative = str($matches['name'] ?? null)->kebab()->startsWith('no-');
+        $name = $matches['name'] ?? null;
         $hasValue = $matches['hasValue'] ?? null;
         $value = $matches['value'] ?? null;
 
         if (! $hasValue) {
-            return [$normalizedName, $isNegative ? false : true];
+            return [$name, true];
         }
 
         $value = match ($value) {
-            'true' => $isNegative ? false : true,
-            'false' => $isNegative ? true : false,
+            'true' => true,
+            'false' => false,
             '' => null,
             default => $value,
         };
 
-        return [
-            is_bool($value) ? $normalizedName : $name,
-            $value,
-        ];
+        return [$name, $value];
     }
 }

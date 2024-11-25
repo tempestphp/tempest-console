@@ -8,12 +8,12 @@ use Tempest\Console\Components\Static\StaticTextBoxComponent;
 use Tempest\Console\HandlesKey;
 use Tempest\Console\HasCursor;
 use Tempest\Console\HasStaticComponent;
-use Tempest\Console\InteractiveConsoleComponent;
+use Tempest\Console\InteractiveComponent;
 use Tempest\Console\Key;
 use Tempest\Console\Point;
-use Tempest\Console\StaticConsoleComponent;
+use Tempest\Console\StaticComponent;
 
-final class TextBoxComponent implements InteractiveConsoleComponent, HasCursor, HasStaticComponent
+final class TextBoxComponent implements InteractiveComponent, HasCursor, HasStaticComponent
 {
     public Point $cursorPosition;
 
@@ -21,13 +21,8 @@ final class TextBoxComponent implements InteractiveConsoleComponent, HasCursor, 
 
     public function __construct(
         public string $label,
-        public ?string $default = null,
     ) {
         $this->cursorPosition = new Point(2, 1);
-
-        foreach (str_split($default ?? '') as $character) {
-            $this->input($character);
-        }
     }
 
     public function render(): string
@@ -116,11 +111,8 @@ final class TextBoxComponent implements InteractiveConsoleComponent, HasCursor, 
         );
     }
 
-    public function getStaticComponent(): StaticConsoleComponent
+    public function getStaticComponent(): StaticComponent
     {
-        return new StaticTextBoxComponent(
-            label: $this->label,
-            default: $this->default
-        );
+        return new StaticTextBoxComponent($this->label);
     }
 }

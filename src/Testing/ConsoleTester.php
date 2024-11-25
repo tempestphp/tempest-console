@@ -12,7 +12,7 @@ use Tempest\Console\Actions\ExecuteConsoleCommand;
 use Tempest\Console\Components\InteractiveComponentRenderer;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleCommand;
-use Tempest\Console\Exceptions\ConsoleErrorHandler;
+use Tempest\Console\Exceptions\ConsoleExceptionHandler;
 use Tempest\Console\ExitCode;
 use Tempest\Console\GenericConsole;
 use Tempest\Console\Input\ConsoleArgumentBag;
@@ -36,8 +36,6 @@ final class ConsoleTester
 
     private ?ExitCode $exitCode = null;
 
-    private bool $withPrompting = true;
-
     public function __construct(
         private readonly Container $container,
     ) {
@@ -56,14 +54,9 @@ final class ConsoleTester
         $console = new GenericConsole(
             output: $memoryOutputBuffer,
             input: $memoryInputBuffer,
-            highlighter: $clone->container->get(Highlighter::class, 'console'),
+            highlighter: $clone->container->get(Highlighter::class),
             executeConsoleCommand: $clone->container->get(ExecuteConsoleCommand::class),
-            argumentBag: $clone->container->get(ConsoleArgumentBag::class),
         );
-
-        if ($this->withPrompting === false) {
-            $console->disablePrompting();
-        }
 
         if ($this->componentRenderer !== null) {
             $console->setComponentRenderer($this->componentRenderer);
@@ -72,7 +65,7 @@ final class ConsoleTester
         $clone->container->singleton(Console::class, $console);
 
         $appConfig = $this->container->get(AppConfig::class);
-        $appConfig->errorHandlers[] = $clone->container->get(ConsoleErrorHandler::class);
+        $appConfig->exceptionHandlers[] = $clone->container->get(ConsoleExceptionHandler::class);
 
         $clone->output = $memoryOutputBuffer;
         $clone->input = $memoryInputBuffer;
@@ -167,19 +160,6 @@ final class ConsoleTester
         return $this;
     }
 
-    public function getBuffer(?callable $callback = null): array
-    {
-        $buffer = array_map('trim', $this->output->getBufferWithoutFormatting());
-
-        $this->output->clear();
-
-        if ($callback !== null) {
-            return $callback($buffer);
-        }
-
-        return $buffer;
-    }
-
     public function useInteractiveTerminal(): self
     {
         $this->componentRenderer = new InteractiveComponentRenderer();
@@ -243,13 +223,6 @@ final class ConsoleTester
         return $this;
     }
 
-    public function assertJson(): self
-    {
-        Assert::assertJson($this->output->asUnformattedString());
-
-        return $this;
-    }
-
     public function assertExitCode(ExitCode $exitCode): self
     {
         Assert::assertNotNull($this->exitCode, "Expected {$exitCode->name}, but instead no exit code was set — maybe you missed providing some input?");
@@ -283,27 +256,6 @@ final class ConsoleTester
     public function assertInvalid(): self
     {
         $this->assertExitCode(ExitCode::INVALID);
-
-        return $this;
-    }
-
-    public function withoutPrompting(): self
-    {
-        $this->withPrompting = false;
-
-        return $this;
-    }
-
-    public function withPrompting(): self
-    {
-        $this->withPrompting = true;
-
-        return $this;
-    }
-
-    public function dd(): self
-    {
-        ld($this->output->asFormattedString());
 
         return $this;
     }

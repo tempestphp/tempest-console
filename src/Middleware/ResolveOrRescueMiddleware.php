@@ -8,7 +8,6 @@ use Tempest\Console\Actions\ExecuteConsoleCommand;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleConfig;
 use Tempest\Console\ConsoleMiddleware;
-use Tempest\Console\ConsoleMiddlewareCallable;
 use Tempest\Console\ExitCode;
 use Tempest\Console\Initializers\Invocation;
 
@@ -21,7 +20,7 @@ final readonly class ResolveOrRescueMiddleware implements ConsoleMiddleware
     ) {
     }
 
-    public function __invoke(Invocation $invocation, ConsoleMiddlewareCallable $next): ExitCode|int
+    public function __invoke(Invocation $invocation, callable $next): ExitCode
     {
         $consoleCommand = $this->consoleConfig->commands[$invocation->argumentBag->getCommandName()] ?? null;
 
@@ -35,7 +34,7 @@ final readonly class ResolveOrRescueMiddleware implements ConsoleMiddleware
         ));
     }
 
-    private function rescue(string $commandName): ExitCode|int
+    private function rescue(string $commandName): ExitCode
     {
         $this->console->writeln("<error>Command {$commandName} not found</error>");
 
@@ -66,10 +65,6 @@ final readonly class ResolveOrRescueMiddleware implements ConsoleMiddleware
         $similarCommands = [];
 
         foreach ($this->consoleConfig->commands as $consoleCommand) {
-            if (in_array($consoleCommand->getName(), $similarCommands, strict: true)) {
-                continue;
-            }
-
             if (str_starts_with($consoleCommand->getName(), $name)) {
                 $similarCommands[] = $consoleCommand->getName();
 
@@ -86,7 +81,7 @@ final readonly class ResolveOrRescueMiddleware implements ConsoleMiddleware
         return $similarCommands;
     }
 
-    private function runIntendedCommand(string $commandName): ExitCode|int
+    private function runIntendedCommand(string $commandName): ExitCode
     {
         return ($this->executeConsoleCommand)($commandName);
     }

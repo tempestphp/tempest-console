@@ -8,7 +8,7 @@ use Generator;
 use Tempest\Console\Console;
 use Tempest\Console\Cursor;
 use Tempest\Console\HasCursor;
-use Tempest\Console\InteractiveConsoleComponent;
+use Tempest\Console\InteractiveComponent;
 use Tempest\Console\Point;
 
 final class Terminal
@@ -64,7 +64,7 @@ final class Terminal
     }
 
     public function render(
-        InteractiveConsoleComponent $component,
+        InteractiveComponent $component,
         array $footerLines = []
     ): Generator {
         $rendered = $component->render();
@@ -85,7 +85,7 @@ final class Terminal
             }
 
             if ($footerLinesForContent !== []) {
-                $content .= PHP_EOL . implode(PHP_EOL, $footerLinesForContent);
+                $content .= PHP_EOL . PHP_EOL . implode(PHP_EOL, $footerLinesForContent);
             }
 
             $this

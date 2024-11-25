@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tempest\Console\Actions;
 
+use Closure;
 use Tempest\Console\ConsoleConfig;
 use Tempest\Console\ConsoleInputBuilder;
-use Tempest\Console\ConsoleMiddlewareCallable;
 use Tempest\Console\ExitCode;
 use Tempest\Console\Initializers\Invocation;
 use Tempest\Console\Input\ConsoleArgumentBag;
@@ -21,7 +21,7 @@ final readonly class ExecuteConsoleCommand
     ) {
     }
 
-    public function __invoke(string $commandName): ExitCode|int
+    public function __invoke(string $commandName): ExitCode
     {
         $callable = $this->getCallable($this->resolveCommandMiddleware($commandName));
 
@@ -32,9 +32,9 @@ final readonly class ExecuteConsoleCommand
         ));
     }
 
-    private function getCallable(array $commandMiddleware): ConsoleMiddlewareCallable
+    private function getCallable(array $commandMiddleware): Closure
     {
-        $callable = new ConsoleMiddlewareCallable(function (Invocation $invocation) {
+        $callable = function (Invocation $invocation) {
             $consoleCommand = $invocation->consoleCommand;
 
             $handler = $consoleCommand->handler;
@@ -43,20 +43,18 @@ final readonly class ExecuteConsoleCommand
 
             $inputBuilder = new ConsoleInputBuilder($consoleCommand, $invocation->argumentBag);
 
-            $exitCode = $consoleCommand->handler->invokeArgs(
+            $consoleCommand->handler->invokeArgs(
                 $consoleCommandClass,
                 $inputBuilder->build(),
             );
 
-            return $exitCode ?? ExitCode::SUCCESS;
-        });
+            return ExitCode::SUCCESS;
+        };
 
         $middlewareStack = [...$this->consoleConfig->middleware, ...$commandMiddleware];
 
         while ($middlewareClass = array_pop($middlewareStack)) {
-            $callable = new ConsoleMiddlewareCallable(
-                fn (Invocation $invocation) => $this->container->get($middlewareClass)($invocation, $callable)
-            );
+            $callable = fn (Invocation $invocation) => $this->container->get($middlewareClass)($invocation, $callable);
         }
 
         return $callable;

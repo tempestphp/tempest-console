@@ -6,7 +6,6 @@ namespace Tempest\Console\Middleware;
 
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleMiddleware;
-use Tempest\Console\ConsoleMiddlewareCallable;
 use Tempest\Console\ExitCode;
 use Tempest\Console\Initializers\Invocation;
 use Tempest\Core\AppConfig;
@@ -19,7 +18,7 @@ final readonly class CautionMiddleware implements ConsoleMiddleware
     ) {
     }
 
-    public function __invoke(Invocation $invocation, ConsoleMiddlewareCallable $next): ExitCode|int
+    public function __invoke(Invocation $invocation, callable $next): ExitCode
     {
         $environment = $this->appConfig->environment;
 

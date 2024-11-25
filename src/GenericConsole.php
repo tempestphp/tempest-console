@@ -16,10 +16,7 @@ use Tempest\Console\Components\Interactive\TextBoxComponent;
 use Tempest\Console\Components\InteractiveComponentRenderer;
 use Tempest\Console\Exceptions\UnsupportedComponent;
 use Tempest\Console\Highlight\TempestConsoleLanguage\TempestConsoleLanguage;
-use Tempest\Console\Input\ConsoleArgumentBag;
-use Tempest\Container\Tag;
 use Tempest\Highlight\Highlighter;
-use Tempest\Highlight\Language;
 
 final class GenericConsole implements Console
 {
@@ -27,23 +24,17 @@ final class GenericConsole implements Console
 
     private bool $isForced = false;
 
-    private bool $supportsTty = true;
-
-    private bool $supportsPrompting = true;
-
     private ?InteractiveComponentRenderer $componentRenderer = null;
 
     public function __construct(
         private readonly OutputBuffer $output,
         private readonly InputBuffer $input,
-        #[Tag('console')]
         private readonly Highlighter $highlighter,
         private readonly ExecuteConsoleCommand $executeConsoleCommand,
-        private readonly ConsoleArgumentBag $argumentBag
     ) {
     }
 
-    public function call(string $command): ExitCode|int
+    public function call(string $command): ExitCode
     {
         return ($this->executeConsoleCommand)($command);
     }
@@ -62,41 +53,23 @@ final class GenericConsole implements Console
         return $this;
     }
 
-    public function disableTty(): self
-    {
-        $this->supportsTty = false;
-
-        return $this;
-    }
-
-    public function disablePrompting(): self
-    {
-        $this->supportsPrompting = false;
-
-        return $this;
-    }
-
     public function read(int $bytes): string
     {
-        if (! $this->supportsPrompting()) {
-            return '';
-        }
-
         return $this->input->read($bytes);
     }
 
     public function readln(): string
     {
-        if (! $this->supportsPrompting()) {
-            return '';
-        }
-
         return $this->input->readln();
     }
 
     public function write(string $contents): static
     {
-        $this->writeWithLanguage($contents, new TempestConsoleLanguage());
+        if ($this->label) {
+            $contents = "<h2>{$this->label}</h2> {$contents}";
+        }
+
+        $this->output->write($this->highlighter->parse($contents, new TempestConsoleLanguage()));
 
         return $this;
     }
@@ -104,17 +77,6 @@ final class GenericConsole implements Console
     public function writeln(string $line = ''): static
     {
         $this->write($line . PHP_EOL);
-
-        return $this;
-    }
-
-    public function writeWithLanguage(string $contents, Language $language): Console
-    {
-        if ($this->label) {
-            $contents = "<h2>{$this->label}</h2> {$contents}";
-        }
-
-        $this->output->write($this->highlighter->parse($contents, $language));
 
         return $this;
     }
@@ -158,9 +120,9 @@ final class GenericConsole implements Console
         return $this;
     }
 
-    public function component(InteractiveConsoleComponent $component, array $validation = []): mixed
+    public function component(InteractiveComponent $component, array $validation = []): mixed
     {
-        if ($this->supportsTty()) {
+        if ($this->interactiveSupported()) {
             return $this->componentRenderer->render($this, $component, $validation);
         }
 
@@ -178,18 +140,13 @@ final class GenericConsole implements Console
         bool $multiple = false,
         bool $asList = false,
         array $validation = [],
-    ): null|string|array {
-        if ($this->isForced && $default) {
-            return $default;
-        }
-
+    ): string|array {
         if ($options === null || $options === []) {
-            $component = new TextBoxComponent($question, $default);
+            $component = new TextBoxComponent($question);
         } elseif ($multiple) {
             $component = new MultipleChoiceComponent(
                 question: $question,
                 options: $options,
-                default: is_array($default) ? $default : [$default],
             );
         } else {
             $component = new SingleChoiceComponent(
@@ -238,38 +195,17 @@ final class GenericConsole implements Console
         return $this->component(new ProgressBarComponent($data, $handler));
     }
 
-    public function search(string $label, Closure $search, ?string $default = null): mixed
+    public function search(string $label, Closure $search): mixed
     {
-        return $this->component(new SearchComponent($label, $search, $default));
+        return $this->component(new SearchComponent($label, $search));
     }
 
-    public function supportsTty(): bool
+    private function interactiveSupported(): bool
     {
-        if ($this->supportsTty === false) {
-            return false;
-        }
-
         if ($this->componentRenderer === null) {
             return false;
         }
 
-        if (! $this->supportsPrompting()) {
-            return false;
-        }
-
         return (bool) shell_exec('which tput && which stty');
-    }
-
-    public function supportsPrompting(): bool
-    {
-        if ($this->supportsPrompting === false) {
-            return false;
-        }
-
-        if ($this->argumentBag->get('interaction')?->value === false) {
-            return false;
-        }
-
-        return true;
     }
 }

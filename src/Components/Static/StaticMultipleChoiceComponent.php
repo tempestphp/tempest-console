@@ -5,29 +5,22 @@ declare(strict_types=1);
 namespace Tempest\Console\Components\Static;
 
 use Tempest\Console\Console;
-use Tempest\Console\StaticConsoleComponent;
+use Tempest\Console\StaticComponent;
 
-final readonly class StaticMultipleChoiceComponent implements StaticConsoleComponent
+final readonly class StaticMultipleChoiceComponent implements StaticComponent
 {
     public function __construct(
         public string $question,
         public array $options,
-        public array $default = [],
     ) {
     }
 
     public function render(Console $console): array
     {
-        if (! $console->supportsPrompting()) {
-            return array_is_list($this->options)
-                ? array_filter($this->default, fn (mixed $value) => in_array($value, $this->options))
-                : array_filter($this->default, fn (mixed $value) => array_key_exists($value, $this->options));
-        }
-
         do {
             $answer = $this->askQuestion($console);
 
-            $answerAsString = implode(', ', $answer) ?: 'no option';
+            $answerAsString = implode(', ', $answer);
 
             $confirm = $console->confirm(
                 question: "You picked {$answerAsString}; continue?",

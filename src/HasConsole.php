@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tempest\Console;
 
 use Closure;
-use Tempest\Container\Inject;
 
 trait HasConsole
 {
-    #[Inject]
-    private readonly Console $console;
+    public function __construct(private readonly Console $console)
+    {
+    }
 
     public function readln(): string
     {

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Tempest\Console\Actions;
 
-use BackedEnum;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleCommand;
-use Tempest\Console\Input\ConsoleArgumentDefinition;
-use function Tempest\Support\str;
+use Tempest\Reflection\ParameterReflector;
 
 final readonly class RenderConsoleCommand
 {
@@ -20,8 +18,8 @@ final readonly class RenderConsoleCommand
     {
         $parts = ["<em><strong>{$consoleCommand->getName()}</strong></em>"];
 
-        foreach ($consoleCommand->getArgumentDefinitions() as $argument) {
-            $parts[] = $this->renderArgument($argument);
+        foreach ($consoleCommand->handler->getParameters() as $parameter) {
+            $parts[] = $this->renderParameter($parameter);
         }
 
         if ($consoleCommand->description !== null && $consoleCommand->description !== '') {
@@ -31,48 +29,22 @@ final readonly class RenderConsoleCommand
         $this->console->writeln(' ' . implode(' ', $parts));
     }
 
-    private function renderArgument(ConsoleArgumentDefinition $argument): string
+    private function renderParameter(ParameterReflector $parameter): string
     {
-        if ($argument->isBackedEnum()) {
-            return $this->renderEnumArgument($argument);
-        }
+        /** @phpstan-ignore-next-line */
+        $type = $parameter->getType()?->getName();
+        $optional = $parameter->isOptional();
+        $defaultValue = strtolower(var_export($optional ? $parameter->getDefaultValue() : null, true));
+        $name = "<em>{$parameter->getName()}</em>";
 
-        $name = str($argument->name)
-            ->prepend('<em>')
-            ->append('</em>');
-
-        $asString = match($argument->type) {
+        $asString = match($type) {
             'bool' => "<em>--</em>{$name}",
             default => $name,
         };
 
-        if (! $argument->hasDefault) {
-            return "<{$asString}>";
-        }
-
-        return match (true) {
-            $argument->default === true => "[{$asString}=true]",
-            $argument->default === false => "[{$asString}=false]",
-            is_null($argument->default) => "[{$asString}=null]",
-            is_array($argument->default) => "[{$asString}=array]",
-            default => "[{$asString}={$argument->default}]"
+        return match($optional) {
+            true => "[{$asString}={$defaultValue}]",
+            false => "<{$asString}>",
         };
-    }
-
-    private function renderEnumArgument(ConsoleArgumentDefinition $argument): string
-    {
-        $parts = array_map(
-            callback: fn (BackedEnum $case) => $case->value,
-            array: $argument->type::cases()
-        );
-
-        $partsAsString = ' {<em>' . implode('|', $parts) . '</em>}';
-        $line = "<em>{$argument->name}</em>";
-
-        if ($argument->hasDefault) {
-            return "[{$line}={$argument->default->value}{$partsAsString}]";
-        }
-
-        return "<{$line}{$partsAsString}>";
     }
 }
