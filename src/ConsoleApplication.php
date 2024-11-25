@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tempest\Console;
 
 use Tempest\Console\Actions\ExecuteConsoleCommand;
-use Tempest\Console\Exceptions\ConsoleExceptionHandler;
 use Tempest\Console\Input\ConsoleArgumentBag;
 use Tempest\Container\Container;
 use Tempest\Core\AppConfig;
@@ -14,7 +13,7 @@ use Tempest\Core\Kernel;
 use Tempest\Core\Tempest;
 use Tempest\Log\Channels\AppendLogChannel;
 use Tempest\Log\LogConfig;
-use Tempest\Support\PathHelper;
+use function Tempest\path;
 use Throwable;
 
 final readonly class ConsoleApplication implements Application
@@ -41,10 +40,14 @@ final readonly class ConsoleApplication implements Application
         $consoleConfig->name = $name;
 
         $logConfig = $container->get(LogConfig::class);
-        $logConfig->debugLogPath = PathHelper::make($container->get(Kernel::class)->root, '/log/debug.log');
-        $logConfig->channels[] = new AppendLogChannel(PathHelper::make($container->get(Kernel::class)->root, '/log/tempest.log'));
 
-        $container->get(AppConfig::class)->exceptionHandlers[] = $container->get(ConsoleExceptionHandler::class);
+        if (
+            $logConfig->debugLogPath === null
+            && $logConfig->channels === []
+        ) {
+            $logConfig->debugLogPath = path($container->get(Kernel::class)->root, '/log/debug.log')->toString();
+            $logConfig->channels[] = new AppendLogChannel(path($container->get(Kernel::class)->root, '/log/tempest.log')->toString());
+        }
 
         return $application;
     }
@@ -54,10 +57,16 @@ final readonly class ConsoleApplication implements Application
         try {
             $exitCode = ($this->container->get(ExecuteConsoleCommand::class))($this->argumentBag->getCommandName());
 
-            exit($exitCode->value);
+            $exitCode = is_int($exitCode) ? $exitCode : $exitCode->value;
+
+            if ($exitCode < 0 || $exitCode > 255) {
+                throw new InvalidExitCode($exitCode);
+            }
+
+            $this->container->get(Kernel::class)->shutdown($exitCode);
         } catch (Throwable $throwable) {
-            foreach ($this->appConfig->exceptionHandlers as $exceptionHandler) {
-                $exceptionHandler->handle($throwable);
+            foreach ($this->appConfig->errorHandlers as $exceptionHandler) {
+                $exceptionHandler->handleException($throwable);
             }
 
             throw $throwable;
