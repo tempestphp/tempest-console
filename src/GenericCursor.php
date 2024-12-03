@@ -2,66 +2,60 @@
 
 declare(strict_types=1);
 
-namespace Tempest\Console\Testing;
+namespace Tempest\Console;
 
-use Tempest\Console\Cursor;
-use Tempest\Console\Point;
-
-final class TestCursor implements Cursor
+final class GenericCursor implements Cursor
 {
-    public function __construct(
-        private int $x = 1,
-        private int $y = 1,
-    ) {
+    public Point $position;
+
+    public function __construct()
+    {
+        $this->position = new Point(0, 0);
     }
 
     public function getPosition(): Point
     {
-        return new Point($this->x, $this->y);
+        return $this->position;
     }
 
-    public function setPosition(Point $position): self
+    public function setPosition(Point $position): Cursor
     {
-        $this->x = $position->x;
-        $this->y = $position->y;
+        $this->position = $position;
 
         return $this;
     }
 
     public function moveUp(int $amount = 1): Cursor
     {
-        $this->y = max(1, $this->y - 1);
+        $this->position->y -= $amount;
 
         return $this;
     }
 
     public function moveDown(int $amount = 1): Cursor
     {
-        $this->y += 1;
+        $this->position->y += $amount;
 
         return $this;
     }
 
     public function moveLeft(int $amount = 1): Cursor
     {
-        $this->x = max(1, $this->x - 1);
+        $this->position->x -= $amount;
 
         return $this;
     }
 
     public function moveRight(int $amount = 1): Cursor
     {
-        $this->x += 1;
+        $this->position->x += $amount;
 
         return $this;
     }
 
     public function place(Point $position): Cursor
     {
-        $this->x = max(1, $position->x);
-        $this->y = max(1, $position->y);
-
-        return $this;
+        return $this->setPosition($position);
     }
 
     public function placeToEnd(): Cursor
