@@ -6,7 +6,7 @@ namespace Tempest\Console;
 
 use Exception;
 
-final class InvalidExitCode extends Exception implements HasExitCode
+final class ExitCodeWasInvalid extends Exception implements HasExitCode
 {
     public function __construct(int $original)
     {
