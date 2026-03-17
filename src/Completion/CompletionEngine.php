@@ -47,7 +47,11 @@ final readonly class CompletionEngine
         $candidates = [];
 
         foreach ($metadata->commands as $name => $command) {
-            if (! is_string($name) || ! $command instanceof CompletionCommand) {
+            if (! is_string($name)) {
+                continue;
+            }
+
+            if (! $command instanceof CompletionCommand) {
                 continue;
             }
 
@@ -131,9 +135,11 @@ final readonly class CompletionEngine
             $candidates[] = $flag->flag;
 
             foreach ($flag->aliases as $alias) {
-                if (str_starts_with($alias, '--')) {
-                    $candidates[] = $alias;
+                if (! str_starts_with($alias, '--')) {
+                    continue;
                 }
+
+                $candidates[] = $alias;
             }
         } elseif (str_starts_with($current, '-')) {
             foreach ($flag->aliases as $alias) {
