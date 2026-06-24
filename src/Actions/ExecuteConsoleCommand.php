@@ -56,11 +56,11 @@ final readonly class ExecuteConsoleCommand
         $callable = new ConsoleMiddlewareCallable(function (Invocation $invocation) {
             $consoleCommand = $invocation->consoleCommand;
 
-            $consoleCommandClass = $this->container->get($consoleCommand->handler->getDeclaringClass()->getName());
+            $consoleCommandClass = $this->container->get($consoleCommand?->handler->getDeclaringClass()->getName());
 
             $inputBuilder = new ConsoleInputBuilder($consoleCommand, $invocation->argumentBag);
 
-            $exitCode = $consoleCommand->handler->invokeArgs(
+            $exitCode = $consoleCommand?->handler->invokeArgs(
                 $consoleCommandClass,
                 $inputBuilder->build(),
             );
