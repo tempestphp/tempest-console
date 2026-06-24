@@ -19,7 +19,7 @@ final class ValidateNamedArgumentsMiddleware implements ConsoleMiddleware
 {
     public function __invoke(Invocation $invocation, ConsoleMiddlewareCallable $next): ExitCode|int
     {
-        if ($invocation->consoleCommand?->allowDynamicArguments) {
+        if ($invocation->consoleCommand->allowDynamicArguments) {
             return $next($invocation);
         }
 

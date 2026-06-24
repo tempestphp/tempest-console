@@ -36,7 +36,7 @@ final readonly class InvalidCommandMiddleware implements ConsoleMiddleware
     {
         $this->console->header(
             header: $invocation->consoleCommand->getName(),
-            subheader: $invocation->consoleCommand?->description,
+            subheader: $invocation->consoleCommand->description,
         );
 
         if (! $this->console->supportsPrompting()) {
