@@ -177,7 +177,11 @@ final class ConsoleArgumentBag
 
         // Otherwise, $arguments is an array of flags or positional argument.
         foreach ($arguments as $key => $argument) {
-            if (! (str_starts_with($argument, '-') && ! str_starts_with($argument, '--'))) {
+            if (! str_starts_with($argument, '-')) {
+                continue;
+            }
+
+            if (str_starts_with($argument, '--')) {
                 continue;
             }
 
